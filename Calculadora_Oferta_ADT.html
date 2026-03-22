@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Oferta ADT — ACT! Security</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:14px;background:#F4F6FA;color:#1a1a1a;padding:16px}
+h1{font-size:17px;font-weight:700;color:#1F3864;margin-bottom:2px}
+.sub{font-size:11px;color:#888;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.box{background:#fff;border:1px solid #D5DCE8;border-radius:10px;padding:14px}
+.sec{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.mc{background:#F0F4FB;border-radius:8px;padding:10px 12px}
+.mc .ml{font-size:11px;color:#666;margin-bottom:2px}
+.mc .mv{font-size:17px;font-weight:700}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #EEF2F8}
+.kv:last-child{border-bottom:none}
+.kv .k{font-size:12px;color:#666}
+.kv .v{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.tbtn{padding:6px 10px;border-radius:7px;border:2px solid transparent;cursor:pointer;font-size:13px;font-weight:700;background:#EEF2F8;margin:2px}
+.cbtn{padding:7px 0;border-radius:7px;border:2px solid #D5DCE8;cursor:pointer;font-size:13px;font-weight:600;background:#F0F4FB;text-align:center;flex:1}
+.cbtn.on{background:#E6F1FB;border-color:#378ADD;color:#0C447C}
+input[type=number]{width:100px;font-size:13px;padding:5px 8px;border-radius:7px;border:1px solid #B8C4D4;background:#fff}
+input[type=range]{width:100%;cursor:pointer;accent-color:#378ADD;height:6px}
+.fl{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.fl label{font-size:12px;color:#666;min-width:80px}
+.togrow{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 12px;background:#F8F9FC;border-radius:8px;border:1px solid #D5DCE8}
+.tog{position:relative;display:inline-block;width:44px;height:22px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.sl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#B8C4D4;border-radius:22px;transition:.2s}
+.sl:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.sl{background:#378ADD}
+input:checked+.sl:before{transform:translateX(22px)}
+.tl{font-size:13px;font-weight:700;color:#1F3864}
+.ts{font-size:11px;color:#888}
+.erow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid #F0F4FB}
+.erow:last-child{border-bottom:none}
+.en{flex:1;font-size:12px;line-height:1.3}
+.esku{font-size:10px;color:#999;display:block}
+.eq{display:flex;align-items:center;gap:3px}
+.qb{width:22px;height:22px;border-radius:5px;border:1px solid #D5DCE8;background:#F0F4FB;cursor:pointer;font-size:14px;font-weight:700;color:#1F3864;line-height:22px;text-align:center}
+.qb:hover{background:#E6F1FB}
+.qn{width:26px;text-align:center;font-size:13px;font-weight:700}
+.eu{font-size:11px;color:#999;min-width:50px;text-align:right}
+.et{font-size:12px;font-weight:700;min-width:58px;text-align:right;color:#C00000}
+.divider{border:none;border-top:1px solid #EEF2F8;margin:10px 0}
+.bbar{height:10px;background:#E8EDF5;border-radius:5px;overflow:hidden;margin:5px 0 3px}
+.bfill{height:100%;border-radius:5px;transition:width .35s,background .35s}
+
+/* Result box */
+.result-big{text-align:center;padding:18px 12px;border-radius:10px;margin-bottom:12px;transition:background .3s}
+.result-big .ramt{font-size:38px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.result-big .remoji{font-size:28px;margin-bottom:4px;letter-spacing:2px}
+.result-big .rlbl{font-size:12px;margin-top:4px;font-weight:600;letter-spacing:.4px}
+
+/* Profit tier ladder */
+.tier-ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.tlrung{border-radius:8px;padding:8px 6px;text-align:center;border:2px solid transparent;transition:all .2s}
+.tlrung .tr-emoji{font-size:18px}
+.tlrung .tr-lbl{font-size:10px;font-weight:700;margin-top:2px}
+.tlrung .tr-amt{font-size:11px;color:#888;margin-top:1px}
+.tlrung.active{border-color:currentColor;background:rgba(0,0,0,.04)}
+
+/* Commission slider */
+.comm-slider-wrap{background:#fff;border:1px solid #D5DCE8;border-radius:10px;padding:14px;margin-bottom:14px}
+.comm-bar-track{position:relative;height:18px;border-radius:9px;overflow:hidden;margin:10px 0 4px;background:linear-gradient(to right,#27500A 0%,#639922 25%,#EF9F27 55%,#C00000 100%)}
+.comm-cursor{position:absolute;top:0;width:4px;height:100%;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #1a1a1a;transition:left .2s;pointer-events:none}
+.comm-labels{display:flex;justify-content:space-between;font-size:11px;color:#888}
+.comm-impact{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:8px 10px;border-radius:7px;background:#F0F4FB}
+
+/* Full breakdown table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+table th{background:#1F3864;color:#fff;padding:7px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase}
+table td{padding:6px 10px;border-bottom:1px solid #EEF2F8}
+table tr:last-child td{font-weight:700;background:#F0F4FB}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+.note{background:#E6F1FB;border-left:4px solid #378ADD;padding:10px 14px;border-radius:0 8px 8px 0;font-size:11px;color:#1F3864;margin-top:12px;line-height:1.7}
+@media(max-width:680px){.g2,.g3,.tier-ladder{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<h1>Calculadora de Oferta ADT — ACT! Security Systems</h1>
+<p class="sub">Dealer 14766798 &nbsp;|&nbsp; Multiplicadores reales Ene–Mar 2026 &nbsp;|&nbsp; Costos con IVU + 15% margen minimo</p>
+
+<!-- TOP ROW -->
+<div class="g2">
+  <!-- Tier + MRR -->
+  <div class="box">
+    <div class="sec">Tier de credito</div>
+    <div id="tierBtns" style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:12px"></div>
+    <div class="fl">
+      <label>MRR mensual ($)</label>
+      <input type="number" id="mrr" value="63.99" step="1" min="25" max="200">
+    </div>
+    <div id="tierInfo" style="font-size:12px;color:#555;background:#F0F4FB;padding:8px 10px;border-radius:7px;line-height:1.7"></div>
+  </div>
+
+  <!-- Result -->
+  <div class="box">
+    <div class="sec">Resultado (sin comision)</div>
+    <div id="resultBox" class="result-big">
+      <div class="remoji" id="rEmoji">—</div>
+      <div class="ramt" id="rAmt">—</div>
+      <div class="rlbl" id="rLbl">Calculando...</div>
+    </div>
+    <div class="tier-ladder" id="tierLadder"></div>
+    <div class="g3" style="margin-top:6px">
+      <div class="mc"><div class="ml">ADT Funding bruto</div><div class="mv" id="kFund" style="color:#185FA5">—</div></div>
+      <div class="mc"><div class="ml">Holdback</div><div class="mv" id="kHB" style="color:#C00000">—</div></div>
+      <div class="mc"><div class="ml">ADT Neto</div><div class="mv" id="kNet" style="color:#375623">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EQUIPMENT ROW -->
+<div class="g2">
+  <!-- Alarm -->
+  <div class="box">
+    <div class="sec">Equipo de alarma — IVU 11.5% + margen 15% (ADI)</div>
+    <div id="alarmEq"></div>
+    <div class="divider"></div>
+    <div class="kv"><span class="k" style="font-weight:700">Total equipo alarma</span><span class="v" style="color:#C00000" id="kAlarm">—</span></div>
+    <div class="kv"><span class="k">Instalacion alarma (fija)</span><span class="v" style="color:#C00000">($100.00)</span></div>
+  </div>
+
+  <!-- Cameras -->
+  <div class="box">
+    <div class="togrow">
+      <label class="tog"><input type="checkbox" id="togCam"><span class="sl"></span></label>
+      <div>
+        <div class="tl" id="provName">VeoSmart N2 (dealer +50%)</div>
+        <div class="ts" id="provNote">IVU 10.5% &nbsp;|&nbsp; NVR PoE + CAT6</div>
+      </div>
+    </div>
+    <div class="sec">Kit de camaras IP 2MP</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px" id="camBtns"></div>
+    <div id="camInfo" style="font-size:11px;color:#666;background:#F0F4FB;padding:7px;border-radius:6px;margin-bottom:10px"></div>
+    <div class="divider"></div>
+    <div class="kv"><span class="k" style="font-weight:700">Total camaras</span><span class="v" style="color:#C00000" id="kCam">—</span></div>
+    <div class="kv"><span class="k">Instalacion camaras</span><span class="v" style="color:#C00000" id="kCamI">—</span></div>
+    <div class="kv"><span class="k" style="font-weight:700">Costo total antes de comision</span><span class="v" style="color:#C00000;font-size:15px" id="kTotalCost">—</span></div>
+  </div>
+</div>
+
+<!-- COMMISSION SLIDER -->
+<div class="comm-slider-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="sec" style="margin-bottom:0">Comision de venta</div>
+    <div style="font-size:16px;font-weight:700;color:#1F3864" id="commVal">$600</div>
+  </div>
+  <input type="range" id="commSlider" min="200" max="900" step="50" value="600">
+  <div class="comm-bar-track" id="commTrack">
+    <div class="comm-cursor" id="commCursor"></div>
+  </div>
+  <div class="comm-labels"><span>$200 — Minima</span><span>$500</span><span>$900 — Alta</span></div>
+  <div class="comm-impact" id="commImpact">
+    <div>
+      <div style="font-size:11px;color:#666">Ganancia antes de comision</div>
+      <div style="font-size:15px;font-weight:700" id="preComm">—</div>
+    </div>
+    <div style="font-size:22px;color:#888">&minus;</div>
+    <div>
+      <div style="font-size:11px;color:#666">Comision</div>
+      <div style="font-size:15px;font-weight:700;color:#C00000" id="commDisp">—</div>
+    </div>
+    <div style="font-size:22px;color:#888">=</div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#666">Ganancia neta FINAL</div>
+      <div style="font-size:22px;font-weight:700" id="postComm">—</div>
+      <div id="postBadge" style="margin-top:3px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL BREAKDOWN -->
+<div class="box" style="margin-bottom:12px">
+  <div class="sec">Desglose financiero completo</div>
+  <table>
+    <thead><tr><th>Concepto</th><th>Detalle</th><th class="r">Monto</th><th class="r">Acumulado</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="note">
+  <strong>Costos de equipo:</strong> Precios ADI (compra local) con margen minimo 15% + IVU 11.5% &nbsp;|&nbsp; <strong>VeoSmart N2:</strong> Costo importacion x1.50 + IVU 10.5% &nbsp;|&nbsp; <strong>MDY:</strong> Precio lista + IVU 11.5%<br>
+  <strong>Instalacion:</strong> $100 alarma fija + $130 primeras 4 camaras + $25 por camara adicional &nbsp;|&nbsp; <strong>Multiplicadores:</strong> Extraidos de 42 Funding Reports Dealer 14766798
+</div>
+
+<script>
+var TIERS=[
+  {bc:"A+",mult:37.0,color:"#0C447C",bg:"#E6F1FB",range:"750+"},
+  {bc:"A", mult:36.0,color:"#185FA5",bg:"#DAEAF7",range:"700-749"},
+  {bc:"B", mult:35.5,color:"#27500A",bg:"#E2EFDA",range:"675-699"},
+  {bc:"B-",mult:32.0,color:"#3B6D11",bg:"#ECF5E2",range:"650-674"},
+  {bc:"C", mult:26.5,color:"#7F6000",bg:"#FFF2CC",range:"620-649"},
+  {bc:"D", mult:31.5,color:"#843C00",bg:"#FCE8D8",range:"580-619"},
+  {bc:"E", mult:31.0,color:"#791F1F",bg:"#FCEBEB",range:"<580"},
+  {bc:"COM",mult:26.5,color:"#3C3489",bg:"#EEEDFE",range:"Todos"}
+];
+
+// Base cost × 1.15 markup × IVU 1.115 = final cost per unit
+var IVU_ADI=1.115, MARKUP=1.15;
+var PARTS=[
+  {key:"panel",name:"Panel ADT5AIO-5", sku:"ADT5AIO-5",  base:139.05,qty:1,fixed:true},
+  {key:"gsm",  name:"GSM LTE AT&T",   sku:"ADTLTE-A3",  base:50.00, qty:1,fixed:true},
+  {key:"P",    name:"Contacto puerta", sku:"SIXCTA",     base:8.80,  qty:2,fixed:false,min:0,max:12},
+  {key:"M",    name:"Motion PIR",      sku:"SIXPIRA",    base:21.50, qty:1,fixed:false,min:0,max:8},
+  {key:"BEE",  name:"Key Fob",         sku:"SIXFOB2A",   base:11.00, qty:1,fixed:false,min:0,max:6},
+  {key:"TRAN", name:"Converter/Z-Wave",sku:"GI-453236",  base:27.77, qty:1,fixed:false,min:0,max:3},
+  {key:"SIR",  name:"Sirena outdoor",  sku:"SIXSIREN-ODA",base:60.00,qty:0,fixed:false,min:0,max:4},
+  {key:"PAN",  name:"Panico",          sku:"SIXPANICA",  base:24.00, qty:0,fixed:false,min:0,max:4},
+  {key:"SHOCK",name:"Shock sensor",    sku:"SIXSHOCK2A", base:12.28, qty:0,fixed:false,min:0,max:8}
+];
+var CAM={
+  n2: {4:351.15,5:371.80,6:419.80,7:467.79,8:515.78},
+  mdy:{4:422.02,5:500.77,6:565.02,7:646.00,8:710.25}
+};
+
+// Profit tier definitions
+var PTIERS=[
+  {min:0,   max:300,  emoji:"🔴",label:"Por debajo del minimo",bg:"#FCE4E4",col:"#C00000"},
+  {min:300, max:400,  emoji:"🟡",label:"Nivel minimo ($300)",  bg:"#FFF9C4",col:"#7F6000"},
+  {min:400, max:500,  emoji:"🟢",label:"Nivel bueno ($400)",   bg:"#E8F5E2",col:"#375623"},
+  {min:500, max:600,  emoji:"🌟",label:"Nivel excelente ($500)",bg:"#E8F5E2",col:"#27500A"},
+  {min:600, max:9999, emoji:"⭐",label:"Premio ($600+)",        bg:"#FFFDE7",col:"#7F6000"}
+];
+
+function getEmoji(m){
+  if(m<0) return "💸 Perdida";
+  if(m<300) return "🔴";
+  if(m<400) return "🟡";
+  if(m<500) return "🟢";
+  if(m<600) return "🌟";
+  // Stars: one per $50 above $600
+  var stars=Math.min(10,Math.floor((m-600)/50)+1);
+  var s="";for(var i=0;i<stars;i++)s+="⭐";
+  return s;
+}
+function getLevel(m){
+  if(m<0) return {label:"Perdida neta",bg:"#FCE4E4",col:"#C00000"};
+  if(m<300) return {label:"Por debajo del minimo — no aceptable",bg:"#FCE4E4",col:"#C00000"};
+  if(m<400) return {label:"Nivel MINIMO — piso de rentabilidad",bg:"#FFF9C4",col:"#B8860B"};
+  if(m<500) return {label:"Nivel BUENO — meta operacional",bg:"#E8F5E2",col:"#375623"};
+  if(m<600) return {label:"Nivel EXCELENTE — muy saludable",bg:"#D4EDDA",col:"#1E6E30"};
+  var stars=Math.min(10,Math.floor((m-600)/50)+1);
+  return {label:"PREMIO — "+stars+" estrella"+(stars>1?"s":"")+" por $"+(Math.floor((m-600)/50)*50+50)+" sobre $600",bg:"#FFFDE7",col:"#7F5000"};
+}
+
+var st={tier:"B",camN:5,useMDY:false,parts:{}};
+PARTS.forEach(function(p){st.parts[p.key]=p.qty;});
+
+function g(id){return document.getElementById(id);}
+function r2(n){return Math.round(n*100)/100;}
+function fmt(n){
+  var a=Math.abs(n);
+  var s=a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (n<0?"($":"$")+s+(n<0?")":"");
+}
+function camI(n){return n===0?0:130+Math.max(0,n-4)*25;}
+function unitCost(base){return r2(base*MARKUP*IVU_ADI);}
+
+function buildTiers(){
+  var c=g("tierBtns");c.innerHTML="";
+  TIERS.forEach(function(t){
+    var b=document.createElement("button");
+    b.className="tbtn";b.textContent=t.bc;
+    b.style.color=t.color;
+    b.style.background=t.bc===st.tier?t.bg:"#EEF2F8";
+    b.style.borderColor=t.bc===st.tier?t.color:"transparent";
+    b.onclick=function(){st.tier=t.bc;calc();};
+    c.appendChild(b);
+  });
+}
+function buildCams(){
+  var c=g("camBtns");c.innerHTML="";
+  [4,5,6,7,8].forEach(function(n){
+    var b=document.createElement("div");
+    b.className="cbtn"+(st.camN===n?" on":"");
+    b.textContent=n+" cam";
+    b.onclick=function(){st.camN=n;calc();};
+    c.appendChild(b);
+  });
+}
+function buildAlarm(){
+  var c=g("alarmEq");c.innerHTML="";
+  PARTS.forEach(function(p){
+    var unit=unitCost(p.base);
+    var qty=p.fixed?1:st.parts[p.key];
+    var tot=r2(unit*qty);
+    var row=document.createElement("div");row.className="erow";
+    if(p.fixed){
+      row.innerHTML="<div class='en'>"+p.name+"<span class='esku'>"+p.sku+" &nbsp; base $"+p.base+" +15%+IVU</span></div>"
+        +"<div style='font-size:10px;color:#999;padding:0 4px'>fijo</div>"
+        +"<div class='eu'>"+fmt(unit)+"</div>"
+        +"<div class='et'>"+fmt(tot)+"</div>";
+    }else{
+      row.innerHTML="<div class='en'>"+p.name+"<span class='esku'>"+p.sku+"</span></div>"
+        +"<div class='eq'>"
+        +"<button class='qb' onclick='adj(\""+p.key+"\",-1)'>-</button>"
+        +"<span class='qn' id='q_"+p.key+"'>"+qty+"</span>"
+        +"<button class='qb' onclick='adj(\""+p.key+"\",1)'>+</button>"
+        +"</div>"
+        +"<div class='eu'>"+fmt(unit)+"</div>"
+        +"<div class='et' id='t_"+p.key+"'>"+(qty>0?fmt(tot):"&mdash;")+"</div>";
+    }
+    c.appendChild(row);
+  });
+}
+function adj(key,d){
+  var p=PARTS.filter(function(x){return x.key===key;})[0];
+  var nx=Math.max(p.min,Math.min(p.max,st.parts[key]+d));
+  st.parts[key]=nx;
+  g("q_"+key).textContent=nx;
+  g("t_"+key).innerHTML=nx>0?fmt(r2(unitCost(p.base)*nx)):"&mdash;";
+  calc();
+}
+
+function buildTierLadder(margin){
+  var c=g("tierLadder");c.innerHTML="";
+  var rungs=[
+    {emoji:"🟡",label:"Minimo",range:"$300–$399",hit:margin>=300&&margin<400},
+    {emoji:"🟢",label:"Bueno",range:"$400–$499",hit:margin>=400&&margin<500},
+    {emoji:"🌟",label:"Excelente",range:"$500–$599",hit:margin>=500&&margin<600},
+    {emoji:"⭐",label:"Premio",range:"$600+",hit:margin>=600}
+  ];
+  rungs.forEach(function(r){
+    var d=document.createElement("div");
+    d.className="tlrung"+(r.hit?" active":"");
+    d.style.background=r.hit?"rgba(55,86,35,.1)":"#F4F6FA";
+    d.style.color=r.hit?"#27500A":"#AAA";
+    d.innerHTML="<div class='tr-emoji' style='font-size:"+(r.hit?"22":"16")+"px'>"+r.emoji+"</div>"
+      +"<div class='tr-lbl' style='color:"+(r.hit?"#1F3864":"#AAA")+"'>"+r.label+"</div>"
+      +"<div class='tr-amt'>"+r.range+"</div>";
+    c.appendChild(d);
+  });
+}
+
+function updateCommSlider(){
+  var comm=parseInt(g("commSlider").value)||600;
+  g("commVal").textContent=fmt(comm);
+  var pct=(comm-200)/(900-200);
+  g("commCursor").style.left=(pct*100)+"%";
+}
+
+function calc(){
+  buildTiers();buildCams();
+  var t=TIERS.filter(function(x){return x.bc===st.tier;})[0]||TIERS[0];
+  var mrr=parseFloat(g("mrr").value)||63.99;
+  var fund=r2(mrr*t.mult);
+  var hb=r2(mrr*(-1.5));
+  var net=r2(fund+hb);
+
+  g("tierInfo").innerHTML="<strong>"+t.bc+"</strong> &nbsp;|&nbsp; Mult: <strong>"+t.mult+"x</strong> &nbsp;|&nbsp; Holdback: &minus;1.5x &nbsp;|&nbsp; FICO: "+t.range+"<br>"
+    +"Funding bruto = "+fmt(mrr)+" &times; "+t.mult+" = <strong>"+fmt(fund)+"</strong> &nbsp;&mdash;&nbsp; ADT Neto = <strong>"+fmt(net)+"</strong>";
+
+  g("kFund").textContent=fmt(fund);
+  g("kHB").textContent=fmt(hb);
+  g("kNet").textContent=fmt(net);
+
+  var alarmCost=r2(PARTS.reduce(function(s,p){
+    var q=p.fixed?1:st.parts[p.key];
+    return s+unitCost(p.base)*q;
+  },0));
+
+  var prov=st.useMDY?"mdy":"n2";
+  var camCost=CAM[prov][st.camN];
+  var ci=camI(st.camN);
+  var totalInst=100+ci;
+  var totalCost=r2(alarmCost+camCost+totalInst);
+  var margin=r2(net-totalCost);
+
+  g("kAlarm").textContent=fmt(-alarmCost);
+  g("kCam").textContent=fmt(-camCost);
+  g("kCamI").textContent=fmt(-ci);
+  g("kTotalCost").textContent=fmt(-totalCost);
+  g("provName").textContent=st.useMDY?"MDY (local Puerto Rico)":"VeoSmart N2 (dealer +50%)";
+  g("provNote").textContent=st.useMDY?"IVU 11.5% | DVR analogico + Siam\u00e9s + Balun":"IVU 10.5% | NVR PoE + CAT6 sin extras";
+  g("camInfo").textContent=st.camN+" camaras 2MP IP | "+(st.useMDY
+    ?"MDY: DVR analogico + cable siames + balun por camara"
+    :"VS N2: NVR PoE + cable CAT6, sin balun ni fuente separada");
+
+  // Result box
+  var emoji=getEmoji(margin);
+  var lv=getLevel(margin);
+  g("resultBox").style.background=lv.bg;
+  g("rEmoji").textContent=emoji;
+  g("rAmt").textContent=fmt(margin);
+  g("rAmt").style.color=lv.col;
+  g("rLbl").textContent=lv.label;
+  g("rLbl").style.color=lv.col;
+
+  buildTierLadder(margin);
+
+  // Commission slider
+  var comm=parseInt(g("commSlider").value)||600;
+  var postComm=r2(margin-comm);
+  var postLv=getLevel(postComm);
+  g("preComm").textContent=fmt(margin);
+  g("preComm").style.color=margin>=0?"#375623":"#C00000";
+  g("commDisp").textContent=fmt(comm);
+  g("postComm").textContent=fmt(postComm);
+  g("postComm").style.color=postLv.col;
+  g("postBadge").innerHTML=getEmoji(postComm)+"<span style='font-size:11px;font-weight:700;margin-left:4px;color:"+postLv.col+"'>"+postLv.label+"</span>";
+
+  // Full breakdown table
+  var tbody=g("tbody");tbody.innerHTML="";
+  var panGsm=r2((unitCost(139.05)+unitCost(50.00)));
+  var sensOnly=r2(alarmCost-panGsm);
+  var acc;
+  var rows=[
+    {k:"ADT Funding bruto",d:t.mult+"x &times; "+fmt(mrr),v:fund,pos:true},
+    {k:"(&minus;) Holdback ADT",d:"&minus;1.5x &times; "+fmt(mrr),v:hb,pos:false},
+    {k:"(=) ADT Neto",d:"",v:net,pos:true,bold:true},
+    {k:"(&minus;) Panel + GSM c/IVU+15%",d:"$"+unitCost(139.05)+" + $"+unitCost(50.00),v:-panGsm,pos:false},
+    {k:"(&minus;) Sensores c/IVU+15%",d:sensDesc(),v:-sensOnly,pos:false},
+    {k:"(&minus;) Camaras "+(st.useMDY?"MDY":"VS N2"),d:st.camN+" cam 2MP",v:-camCost,pos:false},
+    {k:"(&minus;) Instalacion total",d:"Alarma $100 + Cam $"+ci,v:-totalInst,pos:false},
+    {k:"GANANCIA (antes comision)",d:"",v:margin,pos:margin>=0,bold:true},
+    {k:"(&minus;) Comision de venta",d:"Slider: "+fmt(comm),v:-comm,pos:false},
+    {k:"GANANCIA NETA FINAL",d:getEmoji(postComm),v:postComm,pos:postComm>=0,bold:true}
+  ];
+  acc=0;
+  var accVals=[fund,net,net,r2(net-panGsm),r2(net-panGsm-sensOnly),r2(net-panGsm-sensOnly-camCost),margin,margin,r2(margin-comm),r2(margin-comm)];
+  rows.forEach(function(r,i){
+    var tr=document.createElement("tr");
+    if(r.bold){tr.style.background="#F0F4FB";tr.style.fontWeight="700";}
+    var vc=r.pos?"#27500A":"#C00000";
+    var ac=accVals[i]>=0?"#1a1a1a":"#C00000";
+    if(r.k==="GANANCIA NETA FINAL") ac=postLv.col;
+    tr.innerHTML="<td style='font-weight:"+(r.bold?"700":"400")+"'>"+r.k+"</td>"
+      +"<td style='font-size:11px;color:#999'>"+r.d+"</td>"
+      +"<td class='r' style='color:"+vc+";font-weight:"+(r.bold?"700":"400")+"'>"+fmt(r.v)+"</td>"
+      +"<td class='r' style='color:"+ac+";font-weight:"+(r.bold?"700":"400")+"'>"+fmt(accVals[i])+"</td>";
+    tbody.appendChild(tr);
+  });
+
+  updateCommSlider();
+}
+
+function sensDesc(){
+  var parts=PARTS.filter(function(p){return !p.fixed&&st.parts[p.key]>0;});
+  if(!parts.length)return "Sin sensores";
+  return parts.map(function(p){return st.parts[p.key]+"x"+p.key;}).join(" ");
+}
+
+g("togCam").addEventListener("change",function(){st.useMDY=this.checked;buildAlarm();calc();});
+g("mrr").addEventListener("input",calc);
+g("commSlider").addEventListener("input",function(){updateCommSlider();calc();});
+
+buildTiers();buildAlarm();buildCams();calc();
+</script>
+</body>
+</html>
