@@ -78,6 +78,15 @@ table td{padding:6px 10px;border-bottom:1px solid #EEF2F8}
 table tr:last-child td{font-weight:700;background:#F0F4FB}
 .r{text-align:right;font-variant-numeric:tabular-nums}
 .note{background:#E6F1FB;border-left:4px solid #378ADD;padding:10px 14px;border-radius:0 8px 8px 0;font-size:11px;color:#1F3864;margin-top:12px;line-height:1.7}
+.act-box{background:#fff;border:1px solid #D5DCE8;border-radius:10px;padding:14px;margin-bottom:14px}
+.act-tog{position:relative;display:inline-block;width:44px;height:22px;flex-shrink:0}
+.act-tog input{opacity:0;width:0;height:0}
+.act-sl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#B8C4D4;border-radius:22px;transition:.2s}
+.act-sl:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.act-tog input:checked+.act-sl{background:#375623}
+.act-tog input:checked+.act-sl:before{transform:translateX(22px)}
+.act-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-top:4px}
+.act-green{background:#E2EFDA;color:#375623}.act-gray{background:#EEF2F8;color:#888}.act-amber{background:#FFF2CC;color:#7F6000}
 @media(max-width:680px){.g2,.g3,.tier-ladder{grid-template-columns:1fr}}
 </style>
 </head>
@@ -101,7 +110,7 @@ table tr:last-child td{font-weight:700;background:#F0F4FB}
 
   <!-- Result -->
   <div class="box">
-    <div class="sec">Resultado (sin comision)</div>
+    <div class="sec">Ganancia neta final (con comision y activacion)</div>
     <div id="resultBox" class="result-big">
       <div class="remoji" id="rEmoji">—</div>
       <div class="ramt" id="rAmt">—</div>
@@ -146,17 +155,57 @@ table tr:last-child td{font-weight:700;background:#F0F4FB}
   </div>
 </div>
 
+<!-- ACTIVATION FEE -->
+<div class="act-box">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div class="sec" style="margin-bottom:0">Cuota de activacion cobrada al cliente</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <label class="act-tog"><input type="checkbox" id="actToggle"><span class="act-sl"></span></label>
+      <span style="font-size:13px;font-weight:700;color:#375623">Aplica activacion</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <label style="font-size:12px;color:#666;min-width:120px">Monto cobrado ($)</label>
+    <input type="number" id="actAmt" value="199" step="10" min="0" max="999" style="width:100px;font-size:13px;padding:5px 8px;border-radius:7px;border:1px solid #B8C4D4;background:#fff">
+    <div style="display:flex;align-items:center;gap:6px;margin-left:10px">
+      <label class="act-tog"><input type="checkbox" id="vendorActToggle"><span class="act-sl"></span></label>
+      <span style="font-size:12px;color:#666">Vendedor gana 50%</span>
+    </div>
+  </div>
+  <div id="actSummary" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;background:#F8F9FC;padding:10px 12px;border-radius:8px">
+    <div><div style="font-size:11px;color:#666">Activacion cobrada</div><div style="font-size:15px;font-weight:700;color:#375623" id="actCollected">$0.00</div></div>
+    <div style="color:#888;font-size:18px">&minus;</div>
+    <div><div style="font-size:11px;color:#666">50% al vendedor</div><div style="font-size:15px;font-weight:700;color:#C00000" id="actVendor">$0.00</div></div>
+    <div style="color:#888;font-size:18px">=</div>
+    <div><div style="font-size:11px;color:#666">Neto activacion empresa</div><div style="font-size:15px;font-weight:700;color:#185FA5" id="actNet">$0.00</div></div>
+    <div id="actNote" style="font-size:11px;color:#888;flex:1"></div>
+  </div>
+</div>
+
 <!-- COMMISSION SLIDER -->
 <div class="comm-slider-wrap">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
     <div class="sec" style="margin-bottom:0">Comision de venta</div>
-    <div style="font-size:16px;font-weight:700;color:#1F3864" id="commVal">$600</div>
+    <div style="font-size:18px;font-weight:700;color:#1F3864" id="commVal">$600</div>
   </div>
-  <input type="range" id="commSlider" min="200" max="900" step="50" value="600">
-  <div class="comm-bar-track" id="commTrack">
+
+  <!-- Quick select buttons -->
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="commBtns"></div>
+
+  <!-- Manual input row -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 12px;background:#F8F9FC;border-radius:8px;border:1px solid #D5DCE8">
+    <span style="font-size:12px;color:#666;min-width:100px">Manual ($)</span>
+    <input type="number" id="commManual" value="" placeholder="Ej: 450" min="0" max="2000" step="50" style="width:110px;font-size:13px;padding:5px 8px;border-radius:7px;border:1px solid #B8C4D4;background:#fff">
+    <button onclick="applyManualComm()" style="padding:5px 14px;border-radius:7px;border:1px solid #375623;background:#E2EFDA;color:#375623;font-size:12px;font-weight:700;cursor:pointer">Aplicar</button>
+    <span style="font-size:11px;color:#888">Override manual — cualquier monto</span>
+  </div>
+
+  <!-- Gradient bar -->
+  <div class="comm-bar-track" id="commTrack" style="margin-top:4px">
     <div class="comm-cursor" id="commCursor"></div>
   </div>
-  <div class="comm-labels"><span>$200 — Minima</span><span>$500</span><span>$900 — Alta</span></div>
+  <div class="comm-labels"><span>$150 min</span><span>$400</span><span>$700 max rapido</span></div>
+
   <div class="comm-impact" id="commImpact">
     <div>
       <div style="font-size:11px;color:#666">Ganancia antes de comision</div>
@@ -339,11 +388,31 @@ function buildTierLadder(margin){
   });
 }
 
+var COMM_PRESETS=[150,200,250,300,350,400,450,500,550,600,650,700];
+window._activeComm=600;
+
+function buildCommBtns(){
+  var c=g("commBtns");if(!c)return;c.innerHTML="";
+  COMM_PRESETS.forEach(function(v){
+    var b=document.createElement("button");
+    b.textContent="$"+v;
+    var sel=v===window._activeComm;
+    b.style.cssText="padding:5px 10px;border-radius:7px;border:2px solid "+(sel?"#1F3864":"#D5DCE8")+";background:"+(sel?"#1F3864":"#F0F4FB")+";color:"+(sel?"#fff":"#444")+";font-size:12px;font-weight:700;cursor:pointer";
+    b.onclick=function(){window._activeComm=v;g("commManual").value="";buildCommBtns();updateCommSlider();calc();};
+    c.appendChild(b);
+  });
+}
+
+function applyManualComm(){
+  var v=parseFloat(g("commManual").value);
+  if(!isNaN(v)&&v>=0){window._activeComm=Math.round(v);buildCommBtns();updateCommSlider();calc();}
+}
+
 function updateCommSlider(){
-  var comm=parseInt(g("commSlider").value)||600;
+  var comm=window._activeComm||600;
   g("commVal").textContent=fmt(comm);
-  var pct=(comm-200)/(900-200);
-  g("commCursor").style.left=(pct*100)+"%";
+  var pct=Math.min(1,Math.max(0,(comm-150)/(700-150)));
+  if(g("commCursor")) g("commCursor").style.left=(pct*100)+"%";
 }
 
 function calc(){
@@ -383,28 +452,45 @@ function calc(){
     ?"MDY: DVR analogico + cable siames + balun por camara"
     :"VS N2: NVR PoE + cable CAT6, sin balun ni fuente separada");
 
-  // Result box
-  var emoji=getEmoji(margin);
-  var lv=getLevel(margin);
-  g("resultBox").style.background=lv.bg;
-  g("rEmoji").textContent=emoji;
-  g("rAmt").textContent=fmt(margin);
-  g("rAmt").style.color=lv.col;
-  g("rLbl").textContent=lv.label;
-  g("rLbl").style.color=lv.col;
-
-  buildTierLadder(margin);
+  // Result box and tier ladder updated AFTER commission+activation calc below
 
   // Commission slider
-  var comm=parseInt(g("commSlider").value)||600;
-  var postComm=r2(margin-comm);
+  var comm=window._activeComm||600;
+
+  // Activation fee
+  var actOn=g("actToggle").checked;
+  var actAmt=parseFloat(g("actAmt").value)||0;
+  var vendorActOn=g("vendorActToggle").checked;
+  var actCollected=actOn?actAmt:0;
+  var actVendorShare=(actOn&&vendorActOn)?r2(actAmt*0.5):0;
+  var actNetCo=r2(actCollected-actVendorShare);
+  g("actCollected").textContent=fmt(actCollected);
+  g("actVendor").textContent=fmt(-actVendorShare);
+  g("actNet").textContent=fmt(actNetCo);
+  var actNote="";
+  if(!actOn){actNote="Toggle activado para incluir cuota";}
+  else if(margin<400&&vendorActOn){actNote="⚠️ Cuenta debe ser nivel Bueno ($400+) para pagar 50% al vendedor";}
+  else if(vendorActOn){actNote="✓ Cuenta sobre $400 — vendedor califica para 50%";}
+  g("actNote").textContent=actNote;
+
+  var marginWithAct=r2(margin+actNetCo);
+  var postComm=r2(marginWithAct-comm);
   var postLv=getLevel(postComm);
-  g("preComm").textContent=fmt(margin);
-  g("preComm").style.color=margin>=0?"#375623":"#C00000";
+  g("preComm").textContent=fmt(marginWithAct);
+  g("preComm").style.color=marginWithAct>=0?"#375623":"#C00000";
   g("commDisp").textContent=fmt(comm);
   g("postComm").textContent=fmt(postComm);
   g("postComm").style.color=postLv.col;
   g("postBadge").innerHTML=getEmoji(postComm)+"<span style='font-size:11px;font-weight:700;margin-left:4px;color:"+postLv.col+"'>"+postLv.label+"</span>";
+
+  // Update main result box with FINAL net (post-commission + activation)
+  g("resultBox").style.background=postLv.bg;
+  g("rEmoji").textContent=getEmoji(postComm);
+  g("rAmt").textContent=fmt(postComm);
+  g("rAmt").style.color=postLv.col;
+  g("rLbl").textContent=postLv.label;
+  g("rLbl").style.color=postLv.col;
+  buildTierLadder(postComm);
 
   // Full breakdown table
   var tbody=g("tbody");tbody.innerHTML="";
@@ -419,12 +505,15 @@ function calc(){
     {k:"(&minus;) Sensores c/IVU+15%",d:sensDesc(),v:-sensOnly,pos:false},
     {k:"(&minus;) Camaras "+(st.useMDY?"MDY":"VS N2"),d:st.camN+" cam 2MP",v:-camCost,pos:false},
     {k:"(&minus;) Instalacion total",d:"Alarma $100 + Cam $"+ci,v:-totalInst,pos:false},
-    {k:"GANANCIA (antes comision)",d:"",v:margin,pos:margin>=0,bold:true},
+    {k:"GANANCIA (antes activacion/comision)",d:"",v:margin,pos:margin>=0,bold:true},
+    {k:"(+) Activacion cobrada al cliente",d:actOn?"Cuota cliente":"No aplica",v:actCollected,pos:true},
+    {k:"(&minus;) 50% activacion al vendedor",d:vendorActOn&&actOn?"50% de "+fmt(actAmt):"No aplica",v:-actVendorShare,pos:actVendorShare===0},
+    {k:"GANANCIA con activacion",d:"",v:marginWithAct,pos:marginWithAct>=0,bold:true},
     {k:"(&minus;) Comision de venta",d:"Slider: "+fmt(comm),v:-comm,pos:false},
     {k:"GANANCIA NETA FINAL",d:getEmoji(postComm),v:postComm,pos:postComm>=0,bold:true}
   ];
   acc=0;
-  var accVals=[fund,net,net,r2(net-panGsm),r2(net-panGsm-sensOnly),r2(net-panGsm-sensOnly-camCost),margin,margin,r2(margin-comm),r2(margin-comm)];
+  var accVals=[fund,net,net,r2(net-panGsm),r2(net-panGsm-sensOnly),r2(net-panGsm-sensOnly-camCost),margin,margin,r2(margin+actCollected),r2(margin+actCollected-actVendorShare),marginWithAct,postComm,postComm];
   rows.forEach(function(r,i){
     var tr=document.createElement("tr");
     if(r.bold){tr.style.background="#F0F4FB";tr.style.fontWeight="700";}
@@ -449,9 +538,12 @@ function sensDesc(){
 
 g("togCam").addEventListener("change",function(){st.useMDY=this.checked;buildAlarm();calc();});
 g("mrr").addEventListener("input",calc);
-g("commSlider").addEventListener("input",function(){updateCommSlider();calc();});
+// commSlider removed
+g("actToggle").addEventListener("change",calc);
+g("vendorActToggle").addEventListener("change",calc);
+g("actAmt").addEventListener("input",calc);
 
-buildTiers();buildAlarm();buildCams();calc();
+buildTiers();buildAlarm();buildCams();buildCommBtns();updateCommSlider();calc();
 </script>
 </body>
 </html>
